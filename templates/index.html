@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Link & Screenshot Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            text-align: center;
+            padding: 20px;
+            flex-grow: 1;
+            position: relative;
+        }
+        #random-link {
+            margin: 20px 0;
+        }
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            background-color: #f1f1f1;
+            padding: 10px 0;
+        }
+        .tab {
+            padding: 10px;
+            text-decoration: none;
+            color: black;
+        }
+        .tab:hover {
+            background-color: #ddd;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .balance {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .purchase-section {
+            margin-top: 20px;
+        }
+        .form-container {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+        }
+        .form-container h2 {
+            text-align: center;
+        }
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+        .form-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #45a049;
+        }
+        .form-container a {
+            color: white;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="feed" class="tab-content active">
+            <h1>Random Link Generator</h1>
+            <div class="balance">
+                <strong>Balance:</strong> $<span id="balance">{{ balance }}</span>
+            </div>
+            <div class="purchase-section">
+                <h2>Purchase a Link</h2>
+                <button id="purchase-btn" onclick="purchaseLink()" {{ 'disabled' if purchase_made else '' }}>Purchase Link for $10</button>
+            </div>
+            <button id="generate-btn" onclick="generateLink()" disabled>Get Random Link</button>
+            <p id="random-link"></p>
+
+            <h2>Upload Screenshot</h2>
+            <form id="upload-form" enctype="multipart/form-data">
+                <input type="file" name="screenshot" accept="image/*" required>
+                <button type="submit">Upload Screenshot</button>
+            </form>
+        </div>
+
+        <div id="invest" class="tab-content">
+            <h2>Invest</h2>
+            <p>Invest content goes here...</p>
+        </div>
+
+        <div id="history" class="tab-content">
+            <h2>History</h2>
+            <p>History content goes here...</p>
+        </div>
+
+        <div id="profile" class="tab-content">
+            <div id="login-page" class="form-container active">
+                <h2>Login</h2>
+                <form id="login-form">
+                    <input type="text" name="username" placeholder="Enter username" required>
+                    <input type="password" name="password" placeholder="Enter password" required>
+                    <button type="submit">Login</button>
+                </form>
+                <p><a onclick="showRegisterPage()">Open an account</a></p>
+            </div>
+
+            <div id="register-page" class="form-container" style="display:none;">
+                <h2>Registration</h2>
+                <form id="register-form">
+                    <label for="username">Enter One User Name</label>
+                    <input type="text" id="username" name="username" placeholder="Enter username" required>
+
+                    <label for="password">Please Input a Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter password" required>
+
+                    <label for="confirm_password">Verify Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm password" required>
+
+                    <label for="invite_code">Invite Code</label>
+                    <input type="text" id="invite_code" name="invite_code" placeholder="Enter invite code">
+
+                    <button type="submit">Determine</button>
+                </form>
+                <p><a onclick="showLoginPage()">Already have an account? Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <a href="#feed" class="tab" onclick="showTab(event, 'feed')">Feed</a>
+        <a href="#invest" class="tab" onclick="showTab(event, 'invest')">Invest</a>
+        <a href="#history" class="tab" onclick="showTab(event, 'history')">History</a>
+        <a href="#profile" class="tab" onclick="showTab(event, 'profile')">Profile</a>
+    </div>
+
+    <script>
+        const links = [
+            "https://example.com/page1",
+            "https://example.com/page2",
+            "https://example.com/page3",
+            // Add more links as needed
+        ];
+        let balance = parseInt(document.getElementById('balance').innerText);
+
+        function generateLink() {
+            const randomIndex = Math.floor(Math.random() * links.length);
+            const link = links[randomIndex];
+            document.getElementById('random-link').innerHTML = `<a href="${link}" target="_blank">${link}</a>`;
+            document.getElementById('generate-btn').disabled = true;
+            document.getElementById('random-link').style.display = 'block';
+        }
+
+        function purchaseLink() {
+            fetch('/purchase_link', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.new_balance !== undefined) {
+                    document.getElementById('balance').innerText = data.new_balance;
+                    document.getElementById('generate-btn').disabled = false;
+                    document.getElementById('purchase-btn').disabled = true;
+                    document.getElementById('random-link').style.display = 'none';
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+
+        function showTab(event, tabId) {
+            event.preventDefault();
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function showRegisterPage() {
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('register-page').style.display = 'block';
+        }
+
+        function showLoginPage() {
+            document.getElementById('register-page').style.display = 'none';
+            document.getElementById('login-page').style.display = 'block';
+        }
+
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch('/upload_screenshot', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.new_balance !== undefined) {
+                    document.getElementById('balance').innerText = data.new_balance;
+                    alert(data.message);
+                    document.getElementById('generate-btn').disabled = true;
+                    document.getElementById('purchase-btn').disabled = false;
+                    document.querySelector('[name="screenshot"]').value = '';
+                    document.getElementById('random-link').style.display = 'none';
+                } else {
+                    alert(data.message);
+                }
+            });
+        });
+
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch('/login', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            });
+        });
+
+        document.getElementById('register-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch('/register', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+            });
+        });
+    </script>
+</body>
+</html>
