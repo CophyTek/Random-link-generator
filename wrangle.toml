@@ -3,4 +3,4 @@ type = "python"  # Assuming you are using python worker
 account_id = "your-account-id"
 workers_dev = true
 route = ""
-zone_id = 
+zone_id = ""
