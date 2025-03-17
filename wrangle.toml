@@ -1,6 +1,0 @@
-name = "random-link-generator"
-type = "python"  # Assuming you are using python worker
-account_id = "aee97446afa4e01297e84715bd34f1ea"
-workers_dev = true
-route = ""
-zone_id = ""
