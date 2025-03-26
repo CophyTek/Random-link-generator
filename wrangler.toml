@@ -5,5 +5,5 @@ workers_dev = true
 route = ""
 zone_id = ""
 [build]
-command = "python -m flask run"
+command = "pip install -r requirements.txt && python -m flask run"
 pages_build_output_dir = "."
